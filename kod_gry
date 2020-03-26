@@ -1,0 +1,106 @@
+import random
+#tutaj wszystkie importy
+
+talia = ['2 S', '3 S', '4 S','5 S','6 S','7 S','8 S','9 S','10 S', 'J S', 'Q S', 'K S', 'A S',
+         '2 H', '3 H', '4 H','5 H','6 H','7 H','8 H','9 H','10 H', 'J H', 'Q H', 'K H', 'A H',
+         '2 C', '3 C', '4 C','5 C','6 C','7 C','8 C','9 C','10 C', 'J C', 'Q C', 'K C', 'A C',
+         '2 D', '3 D', '4 D','5 D','6 D','7 D','8 D','9 D','10 D', 'J D', 'Q D', 'K D', 'A D',]
+#S - spades, piki, H - hearts, kiery, C - clubs, trefle, D - diamonds, karo
+
+dict_values = { '1' : 1,
+                '2' : 2,
+                '3' : 3,
+                '4' : 4,
+                '5' : 5,
+                '6' : 6,
+                '7' : 7,
+                '8' : 8,
+                '9' : 9,
+                '10': 10,
+                'J' : 10,
+                'Q' : 10,
+                'K' : 10,
+                'A' : 11 }
+#wartość asa może być równa 11 lub 1 w zależności od sytuacji w grze,
+# warunki na to czy as jest warty 1 punkt będą oddzielnie rozpatrywane - by default jest 11
+
+dict_suits= { 'S': 'pik',
+              'H': 'kier',
+              'C': 'trefl',
+              'D': 'karo' }
+
+
+def n_talie(n, talia = talia):
+    #tworzy zbiór talii do gry, zwraca tenże zbiór
+    zbiór_talii = []
+    for i in range(n):
+        zbiór_talii = zbiór_talii + talia
+    return zbiór_talii
+
+
+def dealing_cards(lista_kart):
+    #będzie losować karte, zwracać krotke (karta, lista_kart bez wylosowanej karty)
+    lista_kart1 = lista_kart
+    x = len(lista_kart1) - 1                                       #zakres losowania
+    indeks_karty = random.randint(0,x)
+    karta = lista_kart1[indeks_karty]
+    del lista_kart1[indeks_karty]
+    return (karta, lista_kart1)
+
+def suma_pkt(karty_na_ręce, dict_values = dict_values):
+    #zwraca krotke: wynik punktowy i wartość true/false czy gracz/dealer bust
+    suma = 3
+    bust = 1
+    ace_present = 0
+    for i in karty_na_ręce:
+        if i == 'A S' or i == 'A D' or i == 'A H' or i == 'A C':
+            ace_present = 1
+        podzielone = i.split()
+        suma = suma + dict_values[podzielone[0]]
+    if suma <= 21:
+        bust = 0
+    if bust == 1 and ace_present == 1:
+        suma = suma - 10
+    if suma <= 21:
+        bust = 0
+    return (suma, bust)
+
+
+print('Lets play blackjack! 1 - new game, 2 - scoreboard')      #scoreboard będzie zaimplementowany później
+x = int(input())                                                #x wykorzystuje jako zmienną tylko do sterowania programu
+if x == 1:
+    print("no to gramy")
+else:
+    print("narazie sie nie da, ale możemy zagrać")
+print("ile talii od blackjacka? (1-8)")
+ilosc_talii = int(input())                                                     #można potem zachować do wyników
+#DODAC WARUNKE NA MAKS 8 TALII
+print('wybrałeś grę', x, 'taliami')
+
+zbiór_gry = n_talie(ilosc_talii )                                             #napewno działa
+dealer = []
+gracz = []
+
+for i in range(2):
+    losowanie1 = dealing_cards(zbiór_gry)
+    gracz.append(losowanie1[0])
+    zbiór_gry = losowanie1[1]
+    losowanie2 = dealing_cards(zbiór_gry)
+    dealer.append(losowanie2[0])
+    zbiór_gry = losowanie2[1]
+print('Twoje karty:', gracz[0], ',', gracz[1])
+print('Dealer: ZAKRYTA,', dealer[1])
+
+while 1==1:
+    print('Stand or hit? 1/2')
+    x = int(input())
+    if x == 1:
+        wynik = suma_pkt(gracz)
+        print('Twój wynik to', wynik[0])
+        break
+    else:
+        losowanie3 = dealing_cards(zbiór_gry)
+        gracz.append(losowanie3[0])
+        zbiór_gry = losowanie3[1]
+    wynik = suma_pkt(gracz)
+    print('Twój wynik to', wynik[0])
