@@ -75,7 +75,7 @@ else:
 print("ile talii od blackjacka? (1-8)")
 ilosc_talii = int(input())                                                     #można potem zachować do wyników
 #DODAC WARUNKE NA MAKS 8 TALII
-print('wybrałeś grę', x, 'taliami')
+print('wybrałeś grę', ilosc_talii, 'taliami')
 
 zbiór_gry = n_talie(ilosc_talii )                                             #napewno działa
 dealer = []
