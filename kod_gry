@@ -49,7 +49,7 @@ def dealing_cards(lista_kart):
 
 def suma_pkt(karty_na_ręce, dict_values = dict_values):
     #zwraca krotke: wynik punktowy i wartość true/false czy gracz/dealer bust
-    suma = 3
+    suma = 0
     bust = 1
     ace_present = 0
     for i in karty_na_ręce:
@@ -102,5 +102,16 @@ while 1==1:
         losowanie3 = dealing_cards(zbiór_gry)
         gracz.append(losowanie3[0])
         zbiór_gry = losowanie3[1]
-    wynik = suma_pkt(gracz)
-    print('Twój wynik to', wynik[0])
+    wynik_g = suma_pkt(gracz)
+    print('Twój wynik to', wynik_g[0])
+    if wynik_g[0] == 21:
+        print('Wygrałeś! Chyba że dealer też dostanie 21:')
+        break
+    if wynik_g[1] == 1:
+        print('Przegrałeś! Twoje karty to:')
+        for i in gracz:
+            print(i)
+        print('Dealer:', dealer[0],',', dealer[1])
+        wynik_d = suma_pkt(dealer)
+        print('Wynik dealera to:', wynik_d[0])
+        break
