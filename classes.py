@@ -86,6 +86,10 @@ class BlackJackGame():
                 self.hint(self.dealer)
                 self.check_hand_status()
 
+    def play_a_game(self):
+        self.player_deal()
+        self.dealer_deal()
+
     def secret_card_reverse(self):
         self.dealer.hand.append(self.dealer.secret_card)
         self.dealer.secret_card = []
@@ -162,3 +166,9 @@ class BlackJackGame():
             'raise_bet': self.raise_bet_value()
         }
         return opt_dict[player_choice]
+
+    def play_again(self):
+        self.play_a_game()
+
+    def save_and_close(self):
+        pass
