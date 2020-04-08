@@ -1,20 +1,22 @@
 import random
 
 
-class Player():
+class Player:
     def __init__(self, name=""):
         self.name = name
         self.balance = 500
         self.hand = []
+        self.sum = 0
 
 
-class Dealer():
+class Dealer:
     def __init__(self):
         self.secret_card = []
         self.hand = []
+        self.sum = 0
 
 
-class PackOfCards():
+class PackOfCards:
     def __init__(self, number):
         self.number = number
         self.singlePack = ['2 S', '3 S', '4 S', '5 S', '6 S', '7 S', '8 S', '9 S', '10 S', 'J S', 'Q S', 'K S', 'A S',
@@ -41,15 +43,13 @@ class PackOfCards():
         return card_pl_name
 
 
-class BlackJackGame():
-    def __init__(self, player, dealer, pack):
+class BlackJackGame:
+    def __init__(self, player, pack):
         self.player = player
-        self.player_sum = self.calculate_hand(self.player)
-        self.dealer = dealer
-        self.dealer_sum = self.calculate_hand(self.dealer)
+        self.dealer = Dealer()
         self.pack = pack
         self.bet = 0
-        self.game_result = 0  # 0 - game not end, 1 - player win, 2 - player lose
+        self.game_result = 0  # 0 - game not end, 1 - player win, 2 - player lost, 3 - draw
         self.player_round_end = 0  # 0 - player round, 1 - dealer round
         self.end_type = 0  # 0 - unknown, 1 - play again, 2 - save and close
 
@@ -59,6 +59,7 @@ class BlackJackGame():
 
         self.dealer.hand.append(self.take_card())
         self.dealer.secret_card.append(self.take_card())
+        self.print_status()  # ONLY FOR TESTS
 
     def set_bet_value(self, value):
         if value <= self.player.balance:
@@ -72,26 +73,34 @@ class BlackJackGame():
             self.hint(self.player)
             self.player_round_end = 1
 
-    def player_deal(self):
-        while self.game_result == 0 or self.player_round_end:
+    def player_game(self):
+        bet_value = input("How many dollars you bet? ") # ONLY FOR TESTS
+        self.set_bet_value(int(bet_value))
+        self.check_hand_status()  # ONLY FOR TESTS
+        self.print_status()  # ONLY FOR TESTS
+        while self.game_result == 0 and not self.player_round_end:
             self.check_hand_status()
-            self.set_and_do_player_choice()
+            player_choice = input("What do you want to do? [hint/raise bet/stand]\n")  # ONLY FOR TESTS
+            self.set_and_do_player_choice(player_choice)
             self.check_hand_status()
+            self.print_status()  # ONLY FOR TESTS
 
-    def dealer_deal(self):
+    def dealer_game(self):
         if self.game_result == 0:
             self.secret_card_reverse()
             while self.game_result == 0:
                 self.check_hand_status()
                 self.hint(self.dealer)
                 self.check_hand_status()
+                self.print_status()  # ONLY FOR TESTS
 
     def play_a_game(self):
-        self.player_deal()
-        self.dealer_deal()
+        self.first_deal()
+        self.player_game()
+        self.dealer_game()
 
     def secret_card_reverse(self):
-        self.dealer.hand.append(self.dealer.secret_card)
+        self.dealer.hand.append(self.dealer.secret_card[0])
         self.dealer.secret_card = []
 
     def stand(self):
@@ -136,18 +145,24 @@ class BlackJackGame():
         self.dealer.secret_card = []
 
     def check_hand_status(self):
+        self.player.sum = self.calculate_hand(self.player)
+        self.dealer.sum = self.calculate_hand(self.dealer)
+
         if not self.player_round_end:  # player game
-            if self.player_sum > 21:
+            if self.player.sum > 21:
                 self.game_result = 2
-            elif self.player_sum == 21:
-                self.player.balance += 1.5 * self.bet
-                self.game_result = 1
         else:  # dealer game
-            if self.dealer_sum > 21:
+            if self.dealer.sum > 21:
                 self.player.balance += 2 * self.bet
                 self.game_result = 1
-            elif self.dealer_sum >= 17:
-                if self.dealer_sum < self.player_sum:
+            elif self.dealer.sum >= 17:
+                if self.dealer.sum == self.player.sum:
+                    self.player.balance += self.bet
+                    self.game_result = 3
+                elif self.player.sum == 21:
+                    self.player.balance += 1.5 * self.bet
+                    self.game_result = 1
+                elif self.dealer.sum < self.player.sum:
                     self.player.balance += 2 * self.bet
                     self.game_result = 1
                 else:
@@ -155,20 +170,46 @@ class BlackJackGame():
 
         if self.game_result:
             self.end_type = self.set_end_type()
+            if self.end_type == 1:
+                self.play_again()
+            else:
+                self.save_and_close()
 
     def set_end_type(self, user_choice=1):
+        self.print_status()  # ONLY FOR TESTS
+        user_input = input("GAME END. What's now? [play/close]\n")  # ONLY FOR TESTS
+        if user_input == 'close':  # ONLY FOR TESTS
+            user_choice = 0  # ONLY FOR TESTS
+        else:  # ONLY FOR TESTS
+            user_choice = 1  # ONLY FOR TESTS
+
         return user_choice
 
     def set_and_do_player_choice(self, player_choice='hint'):
-        opt_dict = {
-            'hint': self.hint(self.player),
-            'stand': self.stand(),
-            'raise_bet': self.raise_bet_value()
-        }
-        return opt_dict[player_choice]
+        if player_choice == 'hint':
+            self.hint(self.player)
+        elif player_choice == 'raise bet':
+            self.raise_bet_value()
+        else:
+            self.stand()
 
     def play_again(self):
+        self.player.hand = []
+        self.player.sum = 0
+
+        self.dealer.hand = []
+        self.dealer.secret_card = []
+        self.dealer.sum = 0
+
+        self.game_result = 0
+
         self.play_a_game()
 
     def save_and_close(self):
         pass
+
+    def print_status(self):
+        print(
+            f"\n\nYour hand: {self.player.hand}, your points: {self.player.sum} and your balance: {self.player.balance}\n"  # ONLY FOR TESTS
+            f"Dealer hand: {self.dealer.hand}, dealer points: {self.dealer.sum}\n"  # ONLY FOR TESTS
+            f"Game status: {self.game_result} (0 - no result now, 1 - you win, 2 - you lost, 3 - draw)")  # ONLY FOR TESTS
