@@ -1,13 +1,13 @@
 from classes import Player
-from classes import PackOfCards
 from classes import BlackJackGame
 
 my_player = Player("John")
-my_pack = PackOfCards(number=3)
+pack_number = 3
 
-my_game = BlackJackGame(my_player, my_pack)
+my_game = BlackJackGame(my_player, pack_number)
 
 try:
-    my_game.play_a_game()
-except:
+    my_game.save_score()
+except Exception as exception:
     print("Try again, something went wrong!")
+    print(exception)

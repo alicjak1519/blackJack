@@ -1,4 +1,6 @@
 import random
+import pandas as pd
+from datetime import date
 
 
 class Player:
@@ -44,10 +46,10 @@ class PackOfCards:
 
 
 class BlackJackGame:
-    def __init__(self, player, pack):
+    def __init__(self, player, pack_number):
         self.player = player
         self.dealer = Dealer()
-        self.pack = pack
+        self.pack = PackOfCards(pack_number)
         self.bet = 0
         self.game_result = 0  # 0 - game not end, 1 - player win, 2 - player lost, 3 - draw
         self.player_round_end = 0  # 0 - player round, 1 - dealer round
@@ -67,14 +69,16 @@ class BlackJackGame:
             self.bet = value
 
     def raise_bet_value(self, multiplier=2):
+        multiplier = int(input("How many times?\n"))
         if (multiplier - 1) * self.bet <= self.player.balance:
             self.player.balance -= (multiplier - 1) * self.bet
             self.bet *= multiplier
             self.hint(self.player)
+            self.check_hand_status()
             self.player_round_end = 1
 
     def player_game(self):
-        bet_value = input("How many dollars you bet? ") # ONLY FOR TESTS
+        bet_value = input("How many dollars you bet? ")  # ONLY FOR TESTS
         self.set_bet_value(int(bet_value))
         self.check_hand_status()  # ONLY FOR TESTS
         self.print_status()  # ONLY FOR TESTS
@@ -169,19 +173,20 @@ class BlackJackGame:
                     self.game_result = 2
 
         if self.game_result:
+            self.save_score()
             self.end_type = self.set_end_type()
             if self.end_type == 1:
                 self.play_again()
             else:
-                self.save_and_close()
+                exit(0)
 
     def set_end_type(self, user_choice=1):
         self.print_status()  # ONLY FOR TESTS
-        user_input = input("GAME END. What's now? [play/close]\n")  # ONLY FOR TESTS
-        if user_input == 'close':  # ONLY FOR TESTS
-            user_choice = 0  # ONLY FOR TESTS
-        else:  # ONLY FOR TESTS
+        user_input = input("GAME END. Play again? [y/n]\n")  # ONLY FOR TESTS
+        if user_input == 'y':  # ONLY FOR TESTS
             user_choice = 1  # ONLY FOR TESTS
+        else:  # ONLY FOR TESTS
+            user_choice = 0  # ONLY FOR TESTS
 
         return user_choice
 
@@ -196,20 +201,33 @@ class BlackJackGame:
     def play_again(self):
         self.player.hand = []
         self.player.sum = 0
-
         self.dealer.hand = []
         self.dealer.secret_card = []
         self.dealer.sum = 0
-
         self.game_result = 0
-
         self.play_a_game()
 
-    def save_and_close(self):
-        pass
+    def save_score(self):
+        scores_table = pd.read_csv(r"scores_table.csv")
+
+        if self.player.name in scores_table.values:
+            scores_table.loc[scores_table['player_name'] == self.player.name, ['player_score']] += self.player.sum
+            scores_table.loc[scores_table['player_name'] == self.player.name, ['last_game_date']] = date.today()
+
+        else:
+            game_info = {'player_name': self.player.name, 'player_score': self.player.sum,
+                         'last_game_date': date.today()}
+            scores_table = scores_table.append(game_info, ignore_index=True)
+
+        scores_table.to_csv(r"scores_table.csv", index=False)
 
     def print_status(self):
         print(
-            f"\n\nYour hand: {self.player.hand}, your points: {self.player.sum} and your balance: {self.player.balance}\n"  # ONLY FOR TESTS
-            f"Dealer hand: {self.dealer.hand}, dealer points: {self.dealer.sum}\n"  # ONLY FOR TESTS
-            f"Game status: {self.game_result} (0 - no result now, 1 - you win, 2 - you lost, 3 - draw)")  # ONLY FOR TESTS
+            f"\n\nYour hand: {self.player.hand}, your points: {self.player.sum} and your balance: {self.player.balance}.\n"  # ONLY FOR TESTS
+            f"Dealer hand: {self.dealer.hand}, dealer points: {self.dealer.sum}. Bet is {self.bet}.\n"  # ONLY FOR TESTS
+            f"Game status: {self.game_result} (0 - no result now, 1 - you win, 2 - you lost, 3 - draw).")  # ONLY FOR TESTS
+
+
+def print_scores():
+    scores_table = pd.read_csv(r"scores_table.csv")
+    print(scores_table)
