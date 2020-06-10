@@ -112,7 +112,7 @@ def gra_dilera(dealer, zbiór_gry, gracz):
 import random
 import pandas as pd
 from datetime import date
-
+import time
 
 class Player:
     def __init__(self, name=""):
@@ -485,12 +485,18 @@ while ilosc_talii < 1:
     ilosc_talii = int(input())
 
 print('wybrałeś grę', ilosc_talii, 'taliami')
+print('Czy chcesz grać na czas? 1 - tak, 2 - nie')
+t = int(input())
+start = None
+limit_time = 20
+
 gra = 1
 while gra == 1:
     zbiór_gry = n_talie(ilosc_talii)
     dealer = []
     gracz = []
-
+    if t == 1:
+        start = time.time()
     bet = 0
     bet_modify = 0
 
@@ -515,7 +521,7 @@ while gra == 1:
             print('Dealer: ZAKRYTA,', suits(dealer[1]))
 
             if money >= 2*bet:
-                print('Podwoić stawkę, potroić stawkę czy zostawić obecną? 1/2/3')
+                print('Podwoić stawkę, potroić stawkę czy zostawić obecną? 1/2/3 (-1 cofnij rozdanie)')
                 bet_modify = int(input())
                 if bet_modify == 1:
                     money = money - bet
@@ -527,6 +533,10 @@ while gra == 1:
                     print('Twoja kasa:', money, 'Twoja stawka:', bet)
                 if bet_modify == 3:
                     print('Zostawiasz obecną stawkę')
+                if bet_modify == -1:
+                    money += bet
+                    break
+
 
             elif money >= bet:
                 print('Podwoić stawkę czy nie? 1/2')
@@ -537,6 +547,9 @@ while gra == 1:
                     print('Twoja kasa:', money, 'Twoja stawka:', bet)
                 if bet_modify == 2:
                     print('Zostawiasz obecną stawkę')
+                if bet_modify == -1:
+                    money += bet
+                    break
 
             break
         elif bet < bet_min:
@@ -547,6 +560,8 @@ while gra == 1:
 
 
     while 1==1:
+        if bet_modify == -1:
+            break
         print('Stand or hit? 1/2')
         x = int(input())
         if x == 1:
@@ -558,6 +573,11 @@ while gra == 1:
             if result[2] == 1:
                 print('Dealer dobrał', suits(dealer[2]))
 
+            if start is not None: #warunek do gry na czas
+                elapsed = time.time() - start
+                if elapsed > limit_time:
+                    print('Przegrałeś! Limit czasu przekroczony! Straciłeś', bet, 'pieniendzy')
+                    break
             if result[1] == 1:                                                              #pokazać karty dealera
                 money = money + 1.5*bet
                 print('Wygrałeś', 0.5*bet, '- wynik dealera to:', result[0])
@@ -570,6 +590,12 @@ while gra == 1:
             zbiór_gry = losowanie3[1]
         wynik_g = suma_pkt(gracz)
 
+        if start is not None:  # warunek do gry na czas
+            elapsed = time.time() - start
+            if elapsed > limit_time:
+                print('Przegrałeś! Limit czasu przekroczony! Straciłeś', bet, 'pieniendzy')
+                break
+
         if wynik_g[0] < 21:
             print('Twój wynik to', wynik_g[0])
 
@@ -580,7 +606,17 @@ while gra == 1:
             if result[2] == 1:
                 print('Dealer dobrał', suits(dealer[2]))
 
+            if start is not None:   #warunek do gry na czas
+                elapsed = time.time() - start
+                if elapsed > limit_time:
+                    print('Przegrałeś! Limit czasu przekroczony! Straciłeś', bet, 'pieniendzy')
+
             if result[1] == 1:
+                if start is not None:  # warunek do gry na czas
+                    elapsed = time.time() - start
+                    if elapsed > limit_time:
+                        print('Przegrałeś! Limit czasu przekroczony! Straciłeś', bet, 'pieniendzy')
+                        break
                 money = money + 2*bet
                 print('Wygrałeś', bet, '- wynik dealera to:', result[0])
             else:
