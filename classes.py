@@ -219,6 +219,7 @@ class BlackJackGame:
                          'last_game_date': date.today()}
             scores_table = scores_table.append(game_info, ignore_index=True)
 
+        scores_table = scores_table.sort_values(by=['player_score'], ascending=False)
         scores_table.to_csv(r"scores_table.csv", index=False)
 
     def print_status(self):
@@ -230,4 +231,4 @@ class BlackJackGame:
 
 def print_scores():
     scores_table = pd.read_csv(r"scores_table.csv")
-    print(scores_table)
+    print(scores_table) # ONLY FOR TESTS
